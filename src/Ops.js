@@ -87,6 +87,7 @@ ${cli.getFormatter()(lint.results)}
             outFn = minify ? `${bName}.min.js` : `${bName}.js`,
             //define webpack config
             wpConfig = extend(true, {
+                mode: env,
                 //single entry point of app.js
                 entry: this.__Config.get("wpSingleEntryPoint"),
                 //output to public bundle.js
@@ -118,12 +119,7 @@ ${cli.getFormatter()(lint.results)}
                             }
                         }
                     ]
-                },
-                plugins: [
-                    new webpack.DefinePlugin({
-                        "process.env.NODE_ENV": JSON.stringify(env)
-                    })
-                ]
+                }
             }, this.__Config.get("wpExtOptions"));
         //out operation info
         log.info(`Starting WebPack compiler, output to: ${wpConfig.output.path}/${wpConfig.output.filename}`);
