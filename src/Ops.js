@@ -56,7 +56,7 @@ class Ops {
     //check source code for errors
     lint () {
         //create new cli engine
-        var cli = new ESLintEngine(),
+        var cli = new ESLintEngine({errorOnUnmatchedPattern: false}),
             //execute lint on app directory
             lint = cli.executeOnFiles([this.__Config.get("sourceDir")]);
         //output results

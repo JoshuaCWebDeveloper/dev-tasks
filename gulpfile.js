@@ -15,7 +15,7 @@ var ESLintEngine = require("eslint").CLIEngine,
 var Ops = {
     lint: function () {
         //create new cli engine
-        var cli = new ESLintEngine(),
+        var cli = new ESLintEngine({errorOnUnmatchedPattern: false}),
             //execute lint on app directory
             lint = cli.executeOnFiles(["src", "test"]);
         //output results
