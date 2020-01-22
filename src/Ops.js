@@ -162,28 +162,28 @@ ${cli.getFormatter()(lint.results)}
             };
         //init object to store prop values
         var props = {
-                appName: this.__Config.get('appName'),
-                committer: {
-                    name: this.__Config.get('gitCommitterName'),
-                    email: this.__Config.get('gitCommitterEmail'),
-                    signature: null
-                },
-                changelogName: './changelog-release.txt',
-                type: '',
-                git: {
-                    repo: null,
-                    remote: null,
-                    index: null,
-                    master: null,
-                    head: null,
-                    tree: null,
-                    config: null,
-                    username: '',
-                    useremail: ''
-                },
-                changelogContents: '',
+            appName: this.__Config.get('appName'),
+            committer: {
+                name: this.__Config.get('gitCommitterName'),
+                email: this.__Config.get('gitCommitterEmail'),
+                signature: null
+            },
+            changelogName: './changelog-release.txt',
+            type: '',
+            git: {
+                repo: null,
+                remote: null,
+                index: null,
+                master: null,
+                head: null,
+                tree: null,
+                config: null,
+                username: '',
+                useremail: ''
+            },
+            changelogContents: '',
             tagName: ''
-            };
+        };
               
         //parse type from args
         props.type = argv._.length ? argv._[1] : undefined;
