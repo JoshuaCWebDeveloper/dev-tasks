@@ -144,7 +144,10 @@ ${cli.getFormatter()(lint.results)}
     build () {
         return gulp.src(`${this.__Config.get("sourceDir")}/**`)
             .pipe(babel({
-                presets: ['env', 'react']
+                presets: [
+                    '@babel/preset-env',
+                    '@babel/preset-react'
+                ]
             }))
             .pipe(gulp.dest(`${this.__Config.get("buildDir")}/`));
     }
