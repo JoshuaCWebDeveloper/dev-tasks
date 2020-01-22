@@ -13,7 +13,7 @@ var ESLintEngine = require("eslint").CLIEngine,
 
 //create operations object
 var Ops = {
-    lint: function () {
+    lint: function (cb) {
         //create new cli engine
         var cli = new ESLintEngine({errorOnUnmatchedPattern: false}),
             //execute lint on app directory
@@ -34,6 +34,7 @@ ${cli.getFormatter()(lint.results)}
             //good job
             log.info(`Your code is clean.`);
         }
+        cb();
     },
     // Transpiles our app
     build: function () {
