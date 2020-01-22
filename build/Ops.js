@@ -158,7 +158,7 @@ function () {
     key: "build",
     value: function build() {
       return gulp.src("".concat(this.__Config.get("sourceDir"), "/**")).pipe(babel({
-        presets: ['env']
+        presets: ['env', 'react']
       })).pipe(gulp.dest("".concat(this.__Config.get("buildDir"), "/")));
     }
   }, {
