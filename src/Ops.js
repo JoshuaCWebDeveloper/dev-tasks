@@ -1,7 +1,7 @@
 /* Ops.js
  * Class that holds dev-tasks operations and configuration
  * Dependencies: babili-webpack-plugin, child-process, eslint, extend, fs,
-                 gulp, gulp-util, jcscript, nodegit, os, path, Q, webpack, yargs modules
+                 gulp, fancy-log, jcscript, nodegit, os, path, Q, webpack, yargs modules
  * Author: Joshua Carter
  * Created: July 03, 2017
  */
@@ -14,7 +14,7 @@ var BabiliPlugin = require("babili-webpack-plugin"),
     fs = require('fs'),
     gulp = require("gulp"),
     babel = require("gulp-babel"),
-    gutil = require("gulp-util"),
+    log = require("fancy-log"),
     JCObject = require("jcscript").JCObject,
     Git = require("nodegit"),
     os = require('os'),
@@ -60,7 +60,7 @@ class Ops {
             //execute lint on app directory
             lint = cli.executeOnFiles([this.__Config.get("sourceDir")]);
         //output results
-        gutil.log(`
+        log.info(`
 
 ${cli.getFormatter()(lint.results)}
 `
@@ -72,7 +72,7 @@ ${cli.getFormatter()(lint.results)}
         }
         else {
             //good job
-            gutil.log(`Your code is clean.`);
+            log.info(`Your code is clean.`);
         }
     }
     
@@ -131,11 +131,11 @@ ${cli.getFormatter()(lint.results)}
             }));
         }
         //out operation info
-        gutil.log(`Starting WebPack compiler, output to: ${wpConfig.output.path}/${wpConfig.output.filename}`);
+        log.info(`Starting WebPack compiler, output to: ${wpConfig.output.path}/${wpConfig.output.filename}`);
         //create and run webpack compiler (use Q promise)
         return Q.nbind(webpack)(wpConfig).then(function (stats) {
             //output stats info
-            gutil.log(stats.toString());
+            log.info(stats.toString());
         }, function (err) {
             //log the error
             console.error(err.stack || err);
@@ -380,7 +380,7 @@ Ensure that all of and only the following files are modified: ${reqs.modFiles.jo
             //just use a git command, nodegit isn't ready for prime time
             return Q.nbind(exec)(`git push ${reqs.remote} master:master ${props.tagName}`);
         }).then(function () {
-            gutil.log(
+            log.info(
 `
 
 Successfully released ${props.tagName}!
