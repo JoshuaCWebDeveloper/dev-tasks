@@ -1,14 +1,13 @@
 /* Ops.js
  * Class that holds dev-tasks operations and configuration
- * Dependencies: babili-webpack-plugin, child-process, eslint, extend, fs,
+ * Dependencies: child-process, eslint, extend, fs,
                  gulp, fancy-log, jcscript, nodegit, os, path, Q, webpack, yargs modules
  * Author: Joshua Carter
  * Created: July 03, 2017
  */
 "use strict";
 //include modules
-var BabiliPlugin = require("babili-webpack-plugin"),
-    exec = require('child_process').exec,
+var exec = require('child_process').exec,
     ESLintEngine = require("eslint").CLIEngine,
     extend = require("extend"),
     fs = require('fs'),
@@ -104,7 +103,10 @@ ${cli.getFormatter()(lint.results)}
                             use: {
                                 loader: 'babel-loader',
                                 options: {
-                                    presets: ['env', 'react']
+                                    presets: [
+                                        '@babel/preset-env',
+                                        '@babel/preset-react'
+                                    ].concat(minify ? [['minify', {'builtIns': false}]] : [])
                                 }
                             }
                         },
@@ -123,13 +125,6 @@ ${cli.getFormatter()(lint.results)}
                     })
                 ]
             }, this.__Config.get("wpExtOptions"));
-        //if we are to minify
-        if (minify) {
-            //add minifier plugin
-            wpConfig.plugins.push(new BabiliPlugin({
-                "builtIns": false
-            }));
-        }
         //out operation info
         log.info(`Starting WebPack compiler, output to: ${wpConfig.output.path}/${wpConfig.output.filename}`);
         //create and run webpack compiler (use Q promise)

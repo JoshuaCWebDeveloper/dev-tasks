@@ -40,7 +40,7 @@ ${cli.getFormatter()(lint.results)}
     build: function () {
         return gulp.src('src/**')
             .pipe(babel({
-                presets: ['env']
+                presets: ['@babel/preset-env']
             }))
             .pipe(gulp.dest('build/'));
     }
