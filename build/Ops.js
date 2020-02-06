@@ -48,6 +48,7 @@ function () {
       buildDir: "build",
       bundleDir: "public/js",
       bundleName: "bundle",
+      babelExtOptions: {},
       wpSingleEntryPoint: "./app/app.js",
       wpExtOptions: {},
       gitRemote: 'github',
@@ -57,7 +58,11 @@ function () {
       gitTagName: function gitTagName(version) {
         return "v".concat(version);
       }
-    });
+    }); //store babel options
+
+    this.__babelConfig = {
+      presets: ['@babel/preset-env', '@babel/preset-react']
+    };
   } //init configuration for our Ops
   // - config (obj) A collection of configuration properties
 
@@ -66,7 +71,10 @@ function () {
     key: "init",
     value: function init(config) {
       //update config
-      this.__Config.update(config);
+      this.__Config.update(config); //update babel opts
+
+
+      extend(true, this.__babelConfig, this.__Config.get("babelExtOptions"));
     } //check source code for errors
 
   }, {
@@ -118,11 +126,11 @@ function () {
             exclude: /(node_modules)/,
             use: {
               loader: 'babel-loader',
-              options: {
-                presets: ['@babel/preset-env', '@babel/preset-react'].concat(minify ? [['minify', {
+              options: extend(true, {}, this.__babelConfig, {
+                presets: minify ? [['minify', {
                   'builtIns': false
-                }]] : [])
-              }
+                }]] : []
+              })
             }
           }, //disable AMD support (use CommonJS)
           {
@@ -157,9 +165,7 @@ function () {
   }, {
     key: "build",
     value: function build() {
-      return gulp.src("".concat(this.__Config.get("sourceDir"), "/**")).pipe(babel({
-        presets: ['@babel/preset-env', '@babel/preset-react']
-      })).pipe(gulp.dest("".concat(this.__Config.get("buildDir"), "/")));
+      return gulp.src("".concat(this.__Config.get("sourceDir"), "/**")).pipe(babel(this.__babelConfig)).pipe(gulp.dest("".concat(this.__Config.get("buildDir"), "/")));
     }
   }, {
     key: "release",

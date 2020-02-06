@@ -33,6 +33,7 @@ class Ops {
             buildDir: "build",
             bundleDir: "public/js",
             bundleName: "bundle",
+            babelExtOptions: {},
             wpSingleEntryPoint: "./app/app.js",
             wpExtOptions: {},
             gitRemote: 'github',
@@ -43,6 +44,13 @@ class Ops {
                 return `v${version}`;
             }
         });
+        //store babel options
+        this.__babelConfig = {
+            presets: [
+                '@babel/preset-env',
+                '@babel/preset-react'
+            ]
+        };
     }
     
     //init configuration for our Ops
@@ -50,6 +58,8 @@ class Ops {
     init (config) {
         //update config
         this.__Config.update(config);
+        //update babel opts
+        extend(true, this.__babelConfig, this.__Config.get("babelExtOptions"));
     }
     
     //check source code for errors
@@ -103,12 +113,9 @@ ${cli.getFormatter()(lint.results)}
                             exclude: /(node_modules)/,
                             use: {
                                 loader: 'babel-loader',
-                                options: {
-                                    presets: [
-                                        '@babel/preset-env',
-                                        '@babel/preset-react'
-                                    ].concat(minify ? [['minify', {'builtIns': false}]] : [])
-                                }
+                                options: extend(true, {}, this.__babelConfig, {
+                                    presets: minify ? [['minify', {'builtIns': false}]] : []
+                                })
                             }
                         },
                         //disable AMD support (use CommonJS)
@@ -143,12 +150,7 @@ ${cli.getFormatter()(lint.results)}
     // Transpiles our app
     build () {
         return gulp.src(`${this.__Config.get("sourceDir")}/**`)
-            .pipe(babel({
-                presets: [
-                    '@babel/preset-env',
-                    '@babel/preset-react'
-                ]
-            }))
+            .pipe(babel(this.__babelConfig))
             .pipe(gulp.dest(`${this.__Config.get("buildDir")}/`));
     }
     
