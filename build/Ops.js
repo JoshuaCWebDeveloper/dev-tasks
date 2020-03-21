@@ -147,7 +147,9 @@ function () {
 
       return Q.nbind(webpack)(wpConfig).then(function (stats) {
         //output stats info
-        log.info(stats.toString());
+        log.info(stats.toString()); //pass stats info down the chain
+
+        return stats;
       }, function (err) {
         //log the error
         console.error(err.stack || err); //if we details
