@@ -1,6 +1,6 @@
 /* gulpfile.js
  * Glup task-runner configruation for project
- * Dependencies: eslint, gulp, gulp-babel, gulp-util modules
+ * Dependencies: eslint, gulp, gulp-babel, fancy-log modules
  * Author: Joshua Carter
  * Created: July 04, 2017
  */
@@ -9,17 +9,17 @@
 var ESLintEngine = require("eslint").CLIEngine,
     gulp = require("gulp"),
     babel = require("gulp-babel"),
-    gutil = require("gulp-util");
+    log = require("fancy-log");
 
 //create operations object
 var Ops = {
-    lint: function () {
+    lint: function (cb) {
         //create new cli engine
-        var cli = new ESLintEngine(),
+        var cli = new ESLintEngine({errorOnUnmatchedPattern: false}),
             //execute lint on app directory
             lint = cli.executeOnFiles(["src", "test"]);
         //output results
-        gutil.log(
+        log.info(
 `
 
 ${cli.getFormatter()(lint.results)}
@@ -32,14 +32,15 @@ ${cli.getFormatter()(lint.results)}
         }
         else {
             //good job
-            gutil.log(`Your code is clean.`);
+            log.info(`Your code is clean.`);
         }
+        cb();
     },
     // Transpiles our app
     build: function () {
         return gulp.src('src/**')
             .pipe(babel({
-                presets: ['env']
+                presets: ['@babel/preset-env']
             }))
             .pipe(gulp.dest('build/'));
     }
@@ -48,7 +49,7 @@ ${cli.getFormatter()(lint.results)}
 
 //default gulp task: documentation
 gulp.task('default', function () {
-    gutil.log(
+    log.info(
 `
 
 Available Gulp Commands:

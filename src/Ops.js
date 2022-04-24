@@ -1,20 +1,19 @@
 /* Ops.js
  * Class that holds dev-tasks operations and configuration
- * Dependencies: babili-webpack-plugin, child-process, eslint, extend, fs,
-                 gulp, gulp-util, jcscript, nodegit, os, path, Q, webpack, yargs modules
+ * Dependencies: child-process, eslint, extend, fs,
+                 gulp, fancy-log, jcscript, nodegit, os, path, Q, webpack, yargs modules
  * Author: Joshua Carter
  * Created: July 03, 2017
  */
 "use strict";
 //include modules
-var BabiliPlugin = require("babili-webpack-plugin"),
-    exec = require('child_process').exec,
+var exec = require('child_process').exec,
     ESLintEngine = require("eslint").CLIEngine,
     extend = require("extend"),
     fs = require('fs'),
     gulp = require("gulp"),
     babel = require("gulp-babel"),
-    gutil = require("gulp-util"),
+    log = require("fancy-log"),
     JCObject = require("jcscript").JCObject,
     Git = require("nodegit"),
     os = require('os'),
@@ -34,6 +33,7 @@ class Ops {
             buildDir: "build",
             bundleDir: "public/js",
             bundleName: "bundle",
+            babelExtOptions: {},
             wpSingleEntryPoint: "./app/app.js",
             wpExtOptions: {},
             gitRemote: 'github',
@@ -44,6 +44,13 @@ class Ops {
                 return `v${version}`;
             }
         });
+        //store babel options
+        this.__babelConfig = {
+            presets: [
+                '@babel/preset-env',
+                '@babel/preset-react'
+            ]
+        };
     }
     
     //init configuration for our Ops
@@ -51,16 +58,18 @@ class Ops {
     init (config) {
         //update config
         this.__Config.update(config);
+        //update babel opts
+        extend(true, this.__babelConfig, this.__Config.get("babelExtOptions"));
     }
     
     //check source code for errors
     lint () {
         //create new cli engine
-        var cli = new ESLintEngine(),
+        var cli = new ESLintEngine({errorOnUnmatchedPattern: false}),
             //execute lint on app directory
             lint = cli.executeOnFiles([this.__Config.get("sourceDir")]);
         //output results
-        gutil.log(`
+        log.info(`
 
 ${cli.getFormatter()(lint.results)}
 `
@@ -72,7 +81,7 @@ ${cli.getFormatter()(lint.results)}
         }
         else {
             //good job
-            gutil.log(`Your code is clean.`);
+            log.info(`Your code is clean.`);
         }
     }
     
@@ -88,6 +97,7 @@ ${cli.getFormatter()(lint.results)}
             outFn = minify ? `${bName}.min.js` : `${bName}.js`,
             //define webpack config
             wpConfig = extend(true, {
+                mode: env,
                 //single entry point of app.js
                 entry: this.__Config.get("wpSingleEntryPoint"),
                 //output to public bundle.js
@@ -103,9 +113,9 @@ ${cli.getFormatter()(lint.results)}
                             exclude: /(node_modules)/,
                             use: {
                                 loader: 'babel-loader',
-                                options: {
-                                    presets: ['env', 'react']
-                                }
+                                options: extend(true, {}, this.__babelConfig, {
+                                    presets: minify ? [['minify', {'builtIns': false}]] : []
+                                })
                             }
                         },
                         //disable AMD support (use CommonJS)
@@ -116,26 +126,16 @@ ${cli.getFormatter()(lint.results)}
                             }
                         }
                     ]
-                },
-                plugins: [
-                    new webpack.DefinePlugin({
-                        "process.env.NODE_ENV": JSON.stringify(env)
-                    })
-                ]
+                }
             }, this.__Config.get("wpExtOptions"));
-        //if we are to minify
-        if (minify) {
-            //add minifier plugin
-            wpConfig.plugins.push(new BabiliPlugin({
-                "builtIns": false
-            }));
-        }
         //out operation info
-        gutil.log(`Starting WebPack compiler, output to: ${wpConfig.output.path}/${wpConfig.output.filename}`);
+        log.info(`Starting WebPack compiler, output to: ${wpConfig.output.path}/${wpConfig.output.filename}`);
         //create and run webpack compiler (use Q promise)
         return Q.nbind(webpack)(wpConfig).then(function (stats) {
             //output stats info
-            gutil.log(stats.toString());
+            log.info(stats.toString());
+            //pass stats info down the chain
+            return stats;
         }, function (err) {
             //log the error
             console.error(err.stack || err);
@@ -152,9 +152,7 @@ ${cli.getFormatter()(lint.results)}
     // Transpiles our app
     build () {
         return gulp.src(`${this.__Config.get("sourceDir")}/**`)
-            .pipe(babel({
-                presets: ['env']
-            }))
+            .pipe(babel(this.__babelConfig))
             .pipe(gulp.dest(`${this.__Config.get("buildDir")}/`));
     }
     
@@ -171,28 +169,28 @@ ${cli.getFormatter()(lint.results)}
             };
         //init object to store prop values
         var props = {
-                appName: this.__Config.get('appName'),
-                committer: {
-                    name: this.__Config.get('gitCommitterName'),
-                    email: this.__Config.get('gitCommitterEmail'),
-                    signature: null
-                },
-                changelogName: './changelog-release.txt',
-                type: '',
-                git: {
-                    repo: null,
-                    remote: null,
-                    index: null,
-                    master: null,
-                    head: null,
-                    tree: null,
-                    config: null,
-                    username: '',
-                    useremail: ''
-                },
-                changelogContents: '',
+            appName: this.__Config.get('appName'),
+            committer: {
+                name: this.__Config.get('gitCommitterName'),
+                email: this.__Config.get('gitCommitterEmail'),
+                signature: null
+            },
+            changelogName: './changelog-release.txt',
+            type: '',
+            git: {
+                repo: null,
+                remote: null,
+                index: null,
+                master: null,
+                head: null,
+                tree: null,
+                config: null,
+                username: '',
+                useremail: ''
+            },
+            changelogContents: '',
             tagName: ''
-            };
+        };
               
         //parse type from args
         props.type = argv._.length ? argv._[1] : undefined;
@@ -380,7 +378,7 @@ Ensure that all of and only the following files are modified: ${reqs.modFiles.jo
             //just use a git command, nodegit isn't ready for prime time
             return Q.nbind(exec)(`git push ${reqs.remote} master:master ${props.tagName}`);
         }).then(function () {
-            gutil.log(
+            log.info(
 `
 
 Successfully released ${props.tagName}!
