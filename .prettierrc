@@ -1,15 +1,15 @@
 {
-    "arrowParens": "avoid",
-    "bracketSpacing": true,
-    "semi": true,
-    "singleQuote": true,
-    "tabWidth": 4,
-    "overrides": [
-        {
-            "files": "*.json",
-            "options": {
-                "tabWidth": 2
-            }
-        }
-    ]
+  "arrowParens": "avoid",
+  "bracketSpacing": true,
+  "semi": true,
+  "singleQuote": true,
+  "tabWidth": 4,
+  "overrides": [
+    {
+      "files": ["*.json", "*.yaml", "*.yml", "*.prettierrc"],
+      "options": {
+        "tabWidth": 2
+      }
+    }
+  ]
 }
